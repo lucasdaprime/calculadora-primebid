@@ -95,7 +95,6 @@
           </div>
         </div>
       </div>
-      <div class="col-12 text-end"><button id="calculateBtn" class="btn btn-primary btn-lg">Calcular Tudo</button></div>
     </div>
   </div>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -125,7 +124,7 @@
       const ctx = document.getElementById('projChart').getContext('2d');
       const chart = new Chart(ctx, {
         type: 'bar',
-        data: { labels:['Custo 6m','Lucro 2%','Lucro 4%','Lucro 6%'], datasets:[{ label:'R$ (BRL)', backgroundColor:['#E10600','#198754','#20C997','#A5D6A7'], data:[0,0,0,0] }] },
+        data: { labels:['Custo 6m','Conversão 2%','Conversão 4%','Conversão 6%'], datasets:[{ label:'R$ (BRL)', backgroundColor:['#E10600','#198754','#20C997','#A5D6A7'], data:[0,0,0,0] }] },
         options: { scales:{ y:{ beginAtZero:true } } },
         plugins: [{ afterDatasetsDraw: chart => { chart.data.datasets.forEach((ds,i) => { chart.getDatasetMeta(i).data.forEach((bar,idx) => { const v = ds.data[idx]; chart.ctx.fillStyle='#6c757d'; chart.ctx.font='12px sans-serif'; chart.ctx.textAlign='center'; chart.ctx.fillText(v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}), bar.x, bar.y - 5); }); }); } }]
       });
