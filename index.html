@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora de Planos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background: #f8f9fa; color: #212529; }
+    .card { border: 1px solid #e5e5e5; border-radius: 0.5rem; }
+    .card-header { background: #ffffff; border-bottom: 1px solid #e5e5e5; font-weight: 600; }
+    .form-control { background: #ffffff; border: 1px solid #ced4da; }
+    .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25); }
+    .btn-primary { background: #0d6efd; border-color: #0d6efd; }
+    .btn-outline-primary { border-color: #0d6efd; color: #0d6efd; }
+    .btn-sm { padding: .25rem .5rem; font-size: .875rem; }
+    .divider { border-top: 1px solid #e5e5e5; margin: 1rem 0; }
+    .badge-coupon { background-color: #d4edda; color: #155724; font-size: 0.9rem; padding: 0.5em 0.75em; vertical-align: middle; }
+    .coupon-icon { margin-right: 0.3em; }
+    .metric-value { font-size: 1.5rem; font-weight: 600; }
+    .metric-label { color: #6c757d; }
+  </style>
+</head>
+<body>
+  <div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="mb-0">Calculadora de Planos</h1>
+      <img src="https://lp.primebid.com.br/wp-content/uploads/2021/07/logo_primebid_2021_fundo_claro_png-1.png" alt="Primebid Logo" style="height: 50px;">
+    </div>
+    <div class="row g-4">
+      <!-- Entradas -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header">Entradas</div>
+          <div class="card-body">
+            <div class="mb-3"><label for="ideal" class="form-label">Perfil ideal</label><input type="number" id="ideal" class="form-control" min="1" max="30" value="1"></div>
+            <div class="mb-3"><label for="minimo" class="form-label">Perfil mínimo</label><input type="number" id="minimo" class="form-control" min="1" max="30" value="1"></div>
+            <div class="mb-3"><label for="oportunidades" class="form-label">Oportunidades</label><input type="number" id="oportunidades" class="form-control" min="8" value="8"></div>
+            <fieldset class="mb-3">
+              <legend class="col-form-label">Carência</legend>
+              <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="carencia" id="car3" value="3" checked><label class="form-check-label" for="car3">3 meses</label></div>
+              <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="carencia" id="car6" value="6"><label class="form-check-label" for="car6">6 meses</label></div>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+      <!-- Resultados -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Resultados</span>
+            <button id="shareBtn" class="btn btn-outline-primary btn-sm">Gerar link</button>
+          </div>
+          <div class="card-body" id="results">
+            <p><strong>Perfil médio:</strong> <span id="perfilMedio">-</span></p>
+            <p><strong>Pacote créditos:</strong> <span id="pacote">-</span></p>
+            <p><strong>Valor proposta:</strong> <span id="valor">-</span></p>
+            <div id="desconto15Line" class="alert alert-success d-none py-2"><strong>15% desconto:</strong> <span id="desconto15"></span><div class="small">Carência de 6 meses</div></div>
+            <div id="desconto10Line" class="alert alert-success d-none py-2"><strong>10% adicional:</strong> <span id="desconto10"></span><div class="small">Volume máximo atingido</div></div>
+            <div class="divider"></div>
+            <p>
+              <strong>Valor final:</strong>
+              <span id="valorFinal">-</span>
+              <span id="descontoTotalBadge" class="badge badge-coupon d-none">
+                <i class="coupon-icon">🏷️</i><span id="descontoTotal">-</span>
+              </span>
+            </p>
+            <!-- Container do link gerado -->
+            <div id="linkContainer" class="mt-2 d-none">
+              <input type="text" id="shareLink" class="form-control" readonly>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Projeção e Gráfico -->
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header">Configurações & Projeção (6 meses)</div>
+          <div class="card-body">
+            <div class="row g-3 mb-4">
+              <div class="col-md-4"><label for="valorMedioPosto" class="form-label">Valor médio posto</label><input type="number" id="valorMedioPosto" class="form-control" value="5000"></div>
+              <div class="col-md-4"><label for="margem" class="form-label">Margem lucro (%)</label><input type="number" id="margem" class="form-control" value="10"></div>
+              <div class="col-md-4"><label for="tempoContrato" class="form-label">Vida contrato (meses)</label><input type="number" id="tempoContrato" class="form-control" value="24"></div>
+            </div>
+            <div class="row g-3 mb-4 text-start">
+              <div class="col-md-4"><div id="projVolume" class="metric-value">-</div><div class="metric-label">Volume de propostas enviadas em 6 meses</div></div>
+              <div class="col-md-4"><div id="projValorTotal" class="metric-value">-</div><div class="metric-label">Valor total de propostas enviadas em 6 meses</div></div>
+              <div class="col-md-4"><div id="projValorMedioContrato" class="metric-value">-</div><div class="metric-label">Valor médio de cada novo contrato fechado</div></div>
+              <div class="col-md-4"><div id="projReceitaContrato" class="metric-value">-</div><div class="metric-label">Receita gerada por cada cliente</div></div>
+              <div class="col-md-4"><div id="projLucro" class="metric-value">-</div><div class="metric-label">Lucro por contrato</div></div>
+            </div>
+            <canvas id="projChart" height="100"></canvas>
+            <div id="projBreakEven" class="text-success fw-bold mt-3"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 text-end"><button id="calculateBtn" class="btn btn-primary btn-lg">Calcular Tudo</button></div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(function(){
+      // Prefill inputs via URL params
+      const params = new URLSearchParams(window.location.search);
+      ['ideal','minimo','oportunidades','valorMedioPosto','margem','tempoContrato'].forEach(id => { if(params.has(id)) $('#' + id).val(params.get(id)); });
+      if(params.has('carencia')) $('input[name="carencia"][value="'+params.get('carencia')+'"]').prop('checked',true);
+
+      // Build share link
+      function buildLink() {
+        const p = new URLSearchParams({
+          ideal:$('#ideal').val(), minimo:$('#minimo').val(), oportunidades:$('#oportunidades').val(), carencia:$('input[name="carencia"]:checked').val(),
+          valorMedioPosto:$('#valorMedioPosto').val(), margem:$('#margem').val(), tempoContrato:$('#tempoContrato').val()
+        });
+        return location.href.split('?')[0] + '?' + p.toString();
+      }
+      
+      $('#shareBtn').click(function() {
+        const link = buildLink();
+        $('#shareLink').val(link);
+        $('#linkContainer').removeClass('d-none');
+      });
+
+      // Chart.js
+      const ctx = document.getElementById('projChart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels:['Custo 6m','Lucro 2%','Lucro 4%','Lucro 6%'], datasets:[{ label:'R$ (BRL)', backgroundColor:['#E10600','#198754','#20C997','#A5D6A7'], data:[0,0,0,0] }] },
+        options: { scales:{ y:{ beginAtZero:true } } },
+        plugins: [{ afterDatasetsDraw: chart => { chart.data.datasets.forEach((ds,i) => { chart.getDatasetMeta(i).data.forEach((bar,idx) => { const v = ds.data[idx]; chart.ctx.fillStyle='#6c757d'; chart.ctx.font='12px sans-serif'; chart.ctx.textAlign='center'; chart.ctx.fillText(v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}), bar.x, bar.y - 5); }); }); } }]
+      });
+
+      // Calc functions
+      function calcular() {
+        const ideal=+$('#ideal').val(), min=+$('#minimo').val(), ops=+$('#oportunidades').val(), car=+$('input[name="carencia"]:checked').val();
+        if(!ideal||!min||!ops|| min>ideal|| ops<8) { $('.alert-success, #descontoTotalBadge').addClass('d-none'); return 0; }
+        const med = Math.ceil((ideal+min)/2), unit = {1:70,2:140,3:200,4:220,5:240,6:260,7:280,8:300,9:320,10:340,11:350,12:360,13:370,14:380,15:390,16:400,17:410,18:420,19:430,20:440,21:450,22:460,23:470,24:480,25:490,26:500,27:510,28:520,29:530,30:540}[med]||0;
+        const pac = unit * ops, orig = 2.99 * pac; let d15=0, d10=0;
+        if(car===6) { d15 = orig*0.15; const thresh = {1:1000,2:1000,3:1600,4:2000,5:2000,6:2000,8:2500,9:2500,10:2500,11:2500,12:3000,13:3000,14:3000,15:3000,16:5000}[med]||0; if(pac>=thresh) d10=orig*0.10; }
+        const tot = d15+d10, fin = orig - tot;
+        $('#perfilMedio').text(med);
+        $('#pacote').text(pac);
+        $('#valor').text(orig.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
+        d15?$('#desconto15Line').removeClass('d-none').find('span').text(d15.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0})):$('#desconto15Line').addClass('d-none');
+        d10?$('#desconto10Line').removeClass('d-none').find('span').text(d10.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0})):$('#desconto10Line').addClass('d-none');
+        $('#valorFinal').text(fin.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
+        tot?$('#descontoTotalBadge').removeClass('d-none').find('#descontoTotal').text(tot.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0})):$('#descontoTotalBadge').addClass('d-none');
+        return fin;
+      }
+      function proj() {
+        const fin = calcular(), valMed=+$('#valorMedioPosto').val(), marg=+$('#margem').val()/100, tempo=+$('#tempoContrato').val(), ops=+$('#oportunidades').val();
+        const perfMed = Math.ceil((+$('#ideal').val()+ +$('#minimo').val())/2);
+        const volume6 = ops*6, valorContr = valMed*perfMed, gross=valorContr*volume6;
+        const receita = valorContr*tempo, lucroC = receita*marg, invest=fin*6;
+        $('#projVolume').text(volume6);
+        $('#projValorTotal').text(gross.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
+        $('#projValorMedioContrato').text(valorContr.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
+        $('#projReceitaContrato').text(receita.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
+        $('#projLucro').text(lucroC.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
+        chart.data.datasets[0].data=[invest,lucroC*volume6*0.02,lucroC*volume6*0.04,lucroC*volume6*0.06]; chart.update();
+        $('#projBreakEven').text(`Você precisa vender ${Math.ceil(invest/lucroC)} novos contratos para pagar o investimento de ${invest.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0})}`);
+      }
+      $('#ideal,#minimo,#oportunidades,input[name="carencia"],#valorMedioPosto,#margem,#tempoContrato').on('input change',proj);
+      $('#calculateBtn').on('click',proj);
+      proj();
+    });
+  </script>
+</body>
+</html>
