@@ -39,7 +39,7 @@
           <div class="card-body">
             <div class="mb-3"><label for="ideal" class="form-label">Perfil ideal de cliente<small>(postos)</small></label><input type="number" id="ideal" class="form-control" min="1" max="30" value="1"></div>
             <div class="mb-3"><label for="minimo" class="form-label">Perfil mínimo de cliente<small>(postos)</small></label><input type="number" id="minimo" class="form-control" min="1" max="30" value="1"></div>
-            <div class="mb-3"><label for="oportunidades" class="form-label">Quantidade de Oportunidades<small>por mês</small></label><input type="number" id="oportunidades" class="form-control" min="8" value="8"></div>
+            <div class="mb-3"><label for="oportunidades" class="form-label">Quantidade de Oportunidades<small>por mês</small></label><input type="number" id="oportunidades" class="form-control" min="10" value="10"></div>
             <fieldset class="mb-3">
               <legend class="col-form-label">Carência Contratual</legend>
               <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="carencia" id="car3" value="3" checked><label class="form-check-label" for="car3">3 meses</label></div>
@@ -179,22 +179,74 @@
       });
 
       // Calc functions
-      function calcular() {
-        const ideal=+$('#ideal').val(), min=+$('#minimo').val(), ops=+$('#oportunidades').val(), car=+$('input[name="carencia"]:checked').val();
-        if(!ideal||!min||!ops|| min>ideal|| ops<8) { $('.alert-success, #descontoTotalBadge').addClass('d-none'); return 0; }
-        const med = Math.ceil((ideal+min)/2), unit = {1:70,2:140,3:200,4:220,5:240,6:260,7:280,8:300,9:320,10:340,11:350,12:360,13:370,14:380,15:390,16:400,17:410,18:420,19:430,20:440,21:450,22:460,23:470,24:480,25:490,26:500,27:510,28:520,29:530,30:540}[med]||0;
-        const pac = unit * ops, orig = 2.99 * pac; let d15=0, d10=0;
-        if(car===6) { d15 = orig*0.15; const thresh = {1:1000,2:1000,3:1600,4:2000,5:2000,6:2000,8:2500,9:2500,10:2500,11:2500,12:3000,13:3000,14:3000,15:3000,16:5000}[med]||0; if(pac>=thresh) d10=orig*0.10; }
-        const tot = d15+d10, fin = orig - tot;
-        $('#perfilMedio').text(med);
-        $('#pacote').text(pac);
-        $('#valor').text(orig.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
-        d15?$('#desconto15Line').removeClass('d-none').find('span').text(d15.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0})):$('#desconto15Line').addClass('d-none');
-        d10?$('#desconto10Line').removeClass('d-none').find('span').text(d10.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0})):$('#desconto10Line').addClass('d-none');
-        $('#valorFinal').text(fin.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
-        tot?$('#descontoTotalBadge').removeClass('d-none').find('#descontoTotal').text(tot.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0})):$('#descontoTotalBadge').addClass('d-none');
-        return fin;
-      }
+   function calcular() {
+  const ideal = +$('#ideal').val(),
+        min   = +$('#minimo').val(),
+        ops   = +$('#oportunidades').val(),
+        car   = +$('input[name="carencia"]:checked').val();
+
+  // validações iniciais
+  if (!ideal || !min || !ops || min > ideal || ops < 8) {
+    $('#perfilMedio,#pacote,#valor,#valorFinal').text('-');
+    $('#desconto15Line,#desconto10Line,#descontoTotalBadge').addClass('d-none');
+    return 0;
+  }
+
+  // perfil médio para exibição
+  const med = Math.ceil((ideal + min) / 2);
+
+  // crédito de cada perfil
+  const unitMin   = creditsTable[min]   || 0;
+  const unitIdeal = creditsTable[ideal] || 0;
+
+  // média dos créditos, sempre arredondada para cima
+  const unitAvg = Math.ceil((unitMin + unitIdeal) / 2);
+
+  // pacote total de créditos
+  const pac  = unitAvg * ops;
+  const orig = 2.99 * pac;
+
+  // cálculo de descontos
+  let d15 = 0, d10 = 0;
+  if (car === 6) {
+    const thresh = thresholdTable[med] || 0;
+    d15 = orig * 0.15;
+    if (pac >= thresh) d10 = orig * 0.10;
+  }
+
+  const tot = d15 + d10;
+  const fin = orig - tot;
+
+  // atualiza resultados na tela
+  $('#perfilMedio').text(med);
+  $('#pacote').text(pac);
+  $('#valor').text(orig.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+
+  if (d15) {
+    $('#desconto15').text(d15.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+    $('#desconto15Line').removeClass('d-none');
+  } else {
+    $('#desconto15Line').addClass('d-none');
+  }
+
+  if (d10) {
+    $('#desconto10').text(d10.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+    $('#desconto10Line').removeClass('d-none');
+  } else {
+    $('#desconto10Line').addClass('d-none');
+  }
+
+  $('#valorFinal').text(fin.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+
+  if (tot) {
+    $('#descontoTotal').text(tot.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+    $('#descontoTotalBadge').removeClass('d-none');
+  } else {
+    $('#descontoTotalBadge').addClass('d-none');
+  }
+
+  return fin;
+}
       function proj() {
         const fin = calcular(), valMed=+$('#valorMedioPosto').val(), marg=+$('#margem').val()/100, tempo=+$('#tempoContrato').val(), ops=+$('#oportunidades').val();
         const perfMed = Math.ceil((+$('#ideal').val()+ +$('#minimo').val())/2);
