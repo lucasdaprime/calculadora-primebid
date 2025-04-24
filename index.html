@@ -177,9 +177,12 @@
         options: { scales:{ y:{ beginAtZero:true } } },
         plugins: [{ afterDatasetsDraw: chart => { chart.data.datasets.forEach((ds,i) => { chart.getDatasetMeta(i).data.forEach((bar,idx) => { const v = ds.data[idx]; chart.ctx.fillStyle='#6c757d'; chart.ctx.font='12px sans-serif'; chart.ctx.textAlign='center'; chart.ctx.fillText(v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}), bar.x, bar.y - 5); }); }); } }]
       });
-
+    
+    const creditsTable   = {1:70,2:140,3:200,4:220,5:240,6:260,7:280,8:300,9:320,10:340,11:350,12:360,13:370,14:380,15:390,16:400,17:410,18:420,19:430,20:440,21:450,22:460,23:470,24:480,25:490,26:500,27:510,28:520,29:530,30:540};
+    const thresholdTable = {1:1000,2:1000,3:1600,4:2000,5:2000,6:2000,8:2500,9:2500,10:2500,11:2500,12:3000,13:3000,14:3000,15:3000,16:5000};
+    
       // Calc functions
-  function calcular(){
+   function calcular(){
       const ideal=+$('#ideal').val(),min=+$('#minimo').val(),ops=+$('#oportunidades').val(),car=+$('input[name="carencia"]:checked').val();
       if(!ideal||!min||!ops||ops<8){$('#perfilMedio,#pacote,#valor,#valorFinal').text('-');$('#desconto15Line,#desconto10Line,#descontoTotalBadge').addClass('d-none');return 0;}
       const minPerf=Math.min(ideal,min),idealPerf=Math.max(ideal,min);
@@ -194,23 +197,21 @@
       if(tot){$('#descontoTotalBadge').removeClass('d-none').find('#descontoTotal').text(tot.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));}else $('#descontoTotalBadge').addClass('d-none');
       return fin;
     }
-      function proj() {
-        const fin = calcular(), valMed=+$('#valorMedioPosto').val(), marg=+$('#margem').val()/100, tempo=+$('#tempoContrato').val(), ops=+$('#oportunidades').val();
-        const perfMed = Math.ceil((+$('#ideal').val()+ +$('#minimo').val())/2);
-        const volume6 = ops*6, valorContr = valMed*perfMed, gross=valorContr*volume6;
-        const receita = valorContr*tempo, lucroC = receita*marg, invest=fin*6;
-        $('#projVolume').text(volume6);
-        $('#projValorTotal').text(gross.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
-        $('#projValorMedioContrato').text(valorContr.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
-        $('#projReceitaContrato').text(receita.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
-        $('#projLucro').text(lucroC.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}));
-        chart.data.datasets[0].data=[invest,lucroC*volume6*0.02,lucroC*volume6*0.04,lucroC*volume6*0.06]; chart.update();
-        $('#projBreakEven').text(`Você precisa vender ${Math.ceil(invest/lucroC)} novos contratos para pagar o investimento de ${invest.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0})}`);
-      }
-      $('#ideal,#minimo,#oportunidades,input[name="carencia"],#valorMedioPosto,#margem,#tempoContrato').on('input change',proj);
-      $('#calculateBtn').on('click',proj);
-      proj();
-    });
+    function proj(){const fin=calcular(),valMed=+$('#valorMedioPosto').val(),marg=+$('#margem').val()/100,tempo=+$('#tempoContrato').val(),ops2=+$('#oportunidades').val();
+      const perfMed=Math.ceil((+$('#ideal').val()+ +$('#minimo').val())/2),volume6=ops2*6,valorC=valMed*perfMed,receita=valorC*tempo,lucro=receita*marg,invest=fin*6;
+      $('#projVolume').text(volume6);$('#projValorTotal').text((valorC*volume6).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+      $('#projValorMedioContrato').text(valorC.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+      $('#projReceitaContrato').text(receita.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+      $('#projLucro').text(lucro.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+      chart.data.datasets[0].data=[invest,lucro*volume6*0.02,lucro*volume6*0.04,lucro*volume6*0.06];chart.update();
+      $('#projBreakEven').text(`Você precisa vender ${Math.ceil(invest/lucro)} novos contratos para pagar o investimento de ${invest.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0})}`);
+      $('#copyBtn').prop('disabled',false);
+    }
+    $('#ideal,#minimo,#oportunidades,input[name="carencia"],#valorMedioPosto,#margem,#tempoContrato').on('input change',proj);
+    $('#calculateBtn').on('click',proj);
+    $('#copyBtn').on('click',()=>{navigator.clipboard.writeText(window.location.href);new bootstrap.Toast($('#linkToast')).show();});
+    proj();
+  });
   </script>
 </body>
 </html>
