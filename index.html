@@ -179,74 +179,21 @@
       });
 
       // Calc functions
-   function calcular() {
-  const ideal = +$('#ideal').val(),
-        min   = +$('#minimo').val(),
-        ops   = +$('#oportunidades').val(),
-        car   = +$('input[name="carencia"]:checked').val();
-
-  // validações iniciais
-  if (!ideal || !min || !ops || min > ideal || ops < 8) {
-    $('#perfilMedio,#pacote,#valor,#valorFinal').text('-');
-    $('#desconto15Line,#desconto10Line,#descontoTotalBadge').addClass('d-none');
-    return 0;
-  }
-
-  // perfil médio para exibição
-  const med = Math.ceil((ideal + min) / 2);
-
-  // crédito de cada perfil
-  const unitMin   = creditsTable[min]   || 0;
-  const unitIdeal = creditsTable[ideal] || 0;
-
-  // média dos créditos, sempre arredondada para cima
-  const unitAvg = Math.ceil((unitMin + unitIdeal) / 2);
-
-  // pacote total de créditos
-  const pac  = unitAvg * ops;
-  const orig = 2.99 * pac;
-
-  // cálculo de descontos
-  let d15 = 0, d10 = 0;
-  if (car === 6) {
-    const thresh = thresholdTable[med] || 0;
-    d15 = orig * 0.15;
-    if (pac >= thresh) d10 = orig * 0.10;
-  }
-
-  const tot = d15 + d10;
-  const fin = orig - tot;
-
-  // atualiza resultados na tela
-  $('#perfilMedio').text(med);
-  $('#pacote').text(pac);
-  $('#valor').text(orig.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
-
-  if (d15) {
-    $('#desconto15').text(d15.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
-    $('#desconto15Line').removeClass('d-none');
-  } else {
-    $('#desconto15Line').addClass('d-none');
-  }
-
-  if (d10) {
-    $('#desconto10').text(d10.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
-    $('#desconto10Line').removeClass('d-none');
-  } else {
-    $('#desconto10Line').addClass('d-none');
-  }
-
-  $('#valorFinal').text(fin.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
-
-  if (tot) {
-    $('#descontoTotal').text(tot.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
-    $('#descontoTotalBadge').removeClass('d-none');
-  } else {
-    $('#descontoTotalBadge').addClass('d-none');
-  }
-
-  return fin;
-}
+  function calcular(){
+      const ideal=+$('#ideal').val(),min=+$('#minimo').val(),ops=+$('#oportunidades').val(),car=+$('input[name="carencia"]:checked').val();
+      if(!ideal||!min||!ops||ops<8){$('#perfilMedio,#pacote,#valor,#valorFinal').text('-');$('#desconto15Line,#desconto10Line,#descontoTotalBadge').addClass('d-none');return 0;}
+      const minPerf=Math.min(ideal,min),idealPerf=Math.max(ideal,min);
+      const unitMin=creditsTable[minPerf]||0,unitIdeal=creditsTable[idealPerf]||0;
+      const unitAvg=Math.ceil((unitMin+unitIdeal)/2),pac=unitAvg*ops,orig=2.99*pac;
+      let d15=0,d10=0;if(car===6){d15=orig*0.15;const med=Math.ceil((idealPerf+minPerf)/2),th=thresholdTable[med]||0;if(pac>=th)d10=orig*0.10;}const tot=d15+d10,fin=orig-tot;
+      $('#perfilMedio').text(Math.ceil((idealPerf+minPerf)/2));$('#pacote').text(pac);
+      $('#valor').text(orig.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+      if(d15){$('#desconto15Line').removeClass('d-none').find('span').text(d15.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));}else $('#desconto15Line').addClass('d-none');
+      if(d10){$('#desconto10Line').removeClass('d-none').find('span').text(d10.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));}else $('#desconto10Line').addClass('d-none');
+      $('#valorFinal').text(fin.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));
+      if(tot){$('#descontoTotalBadge').removeClass('d-none').find('#descontoTotal').text(tot.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}));}else $('#descontoTotalBadge').addClass('d-none');
+      return fin;
+    }
       function proj() {
         const fin = calcular(), valMed=+$('#valorMedioPosto').val(), marg=+$('#margem').val()/100, tempo=+$('#tempoContrato').val(), ops=+$('#oportunidades').val();
         const perfMed = Math.ceil((+$('#ideal').val()+ +$('#minimo').val())/2);
